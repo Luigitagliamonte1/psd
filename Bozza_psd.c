@@ -123,3 +123,27 @@ void inserisci_studente(TabellaHashStudenti* t, Studente s) {
     // t->tabella[indice] = ... ;
     t->tabella[indice] = nuovo;
 }
+
+void effettua_prenotazione(TurnoAula* aula, CodaAttesa* coda, char* matricola) {
+    
+    if (aula->posti_occupati == MAX_POSTI) { 
+        // AULA PIENA: Chiamiamo l'aiutante per la coda
+        printf("Aula piena! ");
+        accoda_studente(coda, matricola, aula->data, aula->fascia);
+        
+    } else {
+        // AULA DISPONIBILE: Cerchiamo il posto con il solito ciclo for
+        for (int i = 0; i < MAX_POSTI; i++) {
+            if (aula->posti[i].stato == LIBERO) {
+                aula->posti[i].stato = PRENOTATO;
+                strcpy(aula->posti[i].matricola_studente, matricola);
+                aula->posti_occupati++; // Incrementiamo perché un posto è stato preso
+
+                printf("Prenotazione confermata! Posto assegnato: %d\n", i);
+                return; 
+            }
+        }
+    }
+}
+
+
