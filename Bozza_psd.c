@@ -190,4 +190,33 @@ void accoda_studente(CodaAttesa* coda, char* matricola, char* data, FasciaOraria
     coda->dimensione++;
 }
 
+void effettua_checkin(TabellaHashStudenti* anagrafica, TurnoAula* aula, CodaAttesa* coda, char* matricola) {
+    
+    // 1. Verifica se lo studente esiste nell'anagrafica
+    if (cerca_studente(anagrafica, matricola) == NULL) {
+        printf("Errore: Matricola %s non registrata nel sistema.\n", matricola);
+        return;
+    }
 
+    // 2. Cerchiamo se la matricola ha una prenotazione in questo turno
+    for (int i = 0; i < 100; i++) {
+        // Controlliamo se il posto è prenotato da QUESTA matricola
+        if (strcmp(aula->posti[i].matricola_studente, matricola) == 0 && 
+            aula->posti[i].stato == PRENOTATO) {
+            
+            // Lo studente è arrivato! 
+            // Cambia lo stato del posto i-esimo da PRENOTATO a OCCUPATO
+            aula->posti[i].stato = OCCUPATO;
+
+            printf("Check-in completato per lo studente %s al posto %d.\n", matricola, i);
+            return;
+        }
+    }
+
+    // 3. SE ARRIVA QUI: lo studente non aveva una prenotazione.
+    // Proviamo a vedere se c'è un posto libero per un ingresso immediato.
+    printf("Nessuna prenotazione trovata. Verifico posti liberi...\n");
+    
+    // Chiamata corretta senza tipi, passando i dati direttamente
+    effettua_prenotazione(aula, coda, matricola);
+}
