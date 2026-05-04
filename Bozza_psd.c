@@ -146,4 +146,48 @@ void effettua_prenotazione(TurnoAula* aula, CodaAttesa* coda, char* matricola) {
     }
 }
 
+/* La prossima funzione è accoda_studente con politica FIFO.
+    Cosa succede quando un posto si libera?
+La logica speculare (che dovremo scrivere nel Check-out) farà questo:
+
+Guarda chi c'è in head.
+
+Gli assegna il posto.
+
+Sposta head sul secondo della fila.
+
+Libera la memoria del vecchio nodo con free.
+*/
+// Funzione di supporto per registrare gli eventi nel report
+
+
+void accoda_studente(CodaAttesa* coda, char* matricola, char* data, FasciaOraria fascia) {
+    // 1. Creazione del "posto" in memoria
+    NodoAttesa* nuovo = (NodoAttesa*)malloc(sizeof(NodoAttesa));
+    if (nuovo == NULL) {
+        printf("Errore di allocazione memoria!\n");
+        return;
+    }
+
+    // 2. Riempimento del nodo con i dati dello studente
+    strcpy(nuovo->matricola, matricola);
+    strcpy(nuovo->data, data);
+    nuovo->fascia = fascia;
+    nuovo->next = NULL; // Essendo l'ultimo arrivato, dopo di lui non c'è nessuno
+
+    // 3. Posizionamento nella fila (Logica Tail-Insert)
+    if (coda->head == NULL) {
+        // Caso A: La coda è vuota. Lo studente è sia il primo che l'ultimo.
+        coda->head = nuovo;
+        coda->tail = nuovo;
+    } else {
+        // Caso B: C'è già qualcuno. Ci colleghiamo dopo l'ultimo e diventiamo noi la nuova fine.
+        coda->tail->next = nuovo; // L'attuale ultimo ora punta al nuovo arrivato
+        coda->tail = nuovo;       // Il faro 'tail' si sposta sul nuovo nodo
+    }
+
+    // 4. Aggiornamento della dimensione
+    coda->dimensione++;
+}
+
 
