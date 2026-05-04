@@ -220,3 +220,74 @@ void effettua_checkin(TabellaHashStudenti* anagrafica, TurnoAula* aula, CodaAtte
     // Chiamata corretta senza tipi, passando i dati direttamente
     effettua_prenotazione(aula, coda, matricola);
 }
+
+/* LOGICA ESTRAZIONE (DEQUEUE):
+   1. Vacuità: Se head è NULL, ritorna NULL (evita crash).
+   2. Backup: Salva l'indirizzo della testa attuale in un puntatore.
+   3. Avanzamento: Sposta head sul nodo successivo (testa = testa->next).
+   4. Coerenza: Se la coda è ora vuota, imposta anche tail a NULL.
+   5. Metadati: Decrementa il contatore dimensione.
+   NB: La free() del nodo rimosso deve farla chi chiama la funzione.
+*/
+
+
+NodoAttesa* estrai_studente(CodaAttesa* coda) {
+    // 1. Controllo di sicurezza: se non c'è nessuno in fila, restituisco NULL
+    if (coda->head == NULL) {
+        return NULL; 
+    }
+
+    // 2. "Fotografiamo" il primo studente prima di modificare la fila
+    NodoAttesa* estratto = coda->head;
+
+    // 3. Sposta la 'head' della coda alla persona successiva
+    // (Il prossimo diventa il nuovo primo della fila)
+    coda->head = estratto->next;
+
+    // 4. Se la coda ora è completamente vuota (head è diventato NULL),
+    // dobbiamo resettare anche il puntatore 'tail' (la fine della fila)
+    if (coda->head == NULL) {
+        coda->tail = NULL;
+    }
+
+    // 5. Decrementa il contatore delle persone in fila
+    coda->dimensione--;
+
+    // Restituiamo il nodo appena "staccato" così la funzione checkout potrà usarne i dati!
+    return estratto;
+}
+
+
+/*Dopo aver implementato estrai_studente, il tassello mancante per far funzionare 
+tutto il sistema è la funzione cerca_studente nella Tabella Hash.*/
+
+//(Ricerca nella Tabella Hash):
+
+
+Studente* cerca_studente(TabellaHashStudenti* t, char* matricola) {
+    // 1. Calcoliamo l'indice tramite l'hash della matricola
+    int indice = calcola_hash(matricola);
+
+    // 2. Puntatore per scorrere la lista (collisioni) nel bucket trovato
+    NodoStudente* corrente = t->tabella[indice];
+
+    // 3. Scorrimento della lista concatenata
+    while (corrente != NULL) {
+        // Se troviamo la matricola, restituiamo il puntatore ai dati dello studente
+        if (strcmp(corrente->dati.matricola, matricola) == 0) {
+            return &(corrente->dati);
+        }
+        corrente = corrente->next; // Passa al nodo successivo
+    }
+
+    // 4. Se arriviamo qui, lo studente non è presente
+    return NULL;
+}
+
+/* LOGICA RICERCA (TABELLA HASH):
+   1. Indice: Calcola la posizione nell'array usando l'hash della matricola.
+   2. Accesso: Punta alla testa della lista in quel bucket (per le collisioni).
+   3. Scorrimento: Attraversa i nodi della lista concatenata.
+   4. Confronto: Se le matricole combaciano (strcmp), ritorna lo studente.
+   5. Fallimento: Se la lista finisce senza riscontri, ritorna NULL.
+*/
